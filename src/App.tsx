@@ -1,48 +1,66 @@
-import React, {useEffect} from 'react';
+import React, {useEffect, useState} from 'react';
 import BreakClock from './components/BreakClock';
+import TimerInterface from './components/TimerInterface';
 import Button from './Utilities/Button';
 import './App.css';
 
 const App = () => {
 
-  const [breakLength, setBreakLength] = React.useState(5);
-  const [sessionLength, setSessionLength] = React.useState(25);
-  const [sessionNumber, setSessionNumber] = React.useState(0);
-  const [isPlaying, setIsPlaying] = React.useState(false);
+  const [breakLength, setBreakLength] = useState(5);
+  const [sessionLength, setSessionLength] = useState(25);
+  const [sessionTime, setSessionTime] = useState(sessionLength * 60); // in seconds
+  const [breakTime, setBreakTime] = useState(breakLength * 60); // in seconds
+  const [sessionNumber, setSessionNumber] = useState(0);
+  const [isPlaying, setIsPlaying] = useState(false);
 
   const onSessionIncrementClick = () => {
-    if(sessionLength < 60)
+    if(sessionLength < 60) {
       setSessionLength(sessionLength + 1);
+      setSessionTime((sessionLength + 1) * 60);
+    }
   }
 
   const onSessionDecrementClick = () => {
-    if(sessionLength > 15)
-      setSessionLength(sessionLength - 1)
-  }
+    if (sessionLength > 15) {
+      setSessionLength(sessionLength - 1);
+      setSessionTime((sessionLength - 1) * 60);
+    }
+  };
 
   const onBreakLengthIncrementClick = () => {
-    if(breakLength < 30)
-      setBreakLength( breakLength + 1)
-  }
+    if (breakLength < 30) {
+      setBreakLength(breakLength + 1);
+      setBreakTime((breakLength + 1) * 60);
+    }
+  };
 
   const onBreakLengthDecrementClick = () => {
-    if(breakLength > 5)
-      setBreakLength( breakLength - 1)
-  }
+    if (breakLength > 5) {
+      setBreakLength(breakLength - 1);
+      setBreakTime((breakLength - 1) * 60);
+    }
+  };
 
-  // useEffect(() => {
-  //   while (isPlaying) {
-  //     if(sessionLength > 0) {
-  //         setSessionLength(sessionLength - 0.01);
-  //     } else if(breakLength > 0 ){
-  //         setBreakLength(breakLength - 0.01)
-  //     }else {
-  //       setSessionNumber(sessionNumber + 1);
-  //       setIsPlaying(false);
-  //       return
-  //     }
-  //   }
-  // });
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    if (isPlaying) {
+      timer = setInterval(() => {
+        if (sessionTime > 0) {
+          setSessionTime(prev => prev - 1);
+        } else if (breakTime > 0) {
+          setBreakTime(prev => prev - 1);
+        } else {
+          setSessionNumber(prev => prev + 1);
+          setIsPlaying(false);
+          setSessionTime(sessionLength * 60);
+          setBreakTime(breakLength * 60);
+        }
+      }, 1000); // Update every second
+    }
+
+    return () => clearInterval(timer); // Cleanup on unmount or when dependencies change
+  }, [isPlaying, sessionLength, breakLength, sessionNumber]);
+
 
 
 
@@ -58,18 +76,28 @@ const App = () => {
 
     }
   }
+
+  const formatTime = (timeInSeconds: number) => {
+    const minutes = Math.floor(timeInSeconds / 60);
+    const seconds = timeInSeconds % 60;
+    return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+  };
   
 
 
   return (
     <div className="App">
-      <BreakClock sessionTime={sessionLength} breakTime={breakLength} sessionNumber={sessionNumber} />
-      <Button id="play" onClick={playClick} text="play" />
-      <Button id="pause" onClick={pauseClick} text="pause" />
-      <Button id="break-increment" onClick={onBreakLengthIncrementClick} text="Break Increment" />
-      <Button id="break-decrement" onClick={onBreakLengthDecrementClick} text="Break Decrement" />
-      <Button id="session-increment" onClick={onSessionIncrementClick} text="Session Increment" />
-      <Button id="session-decrement" onClick={onSessionDecrementClick} text="Session Decrement" />
+      <BreakClock 
+        sessionTime={formatTime(sessionTime)} 
+        breakTime={formatTime(breakTime)} 
+        sessionNumber={sessionNumber} 
+        clickActions={[pauseClick, playClick ]} 
+      />
+      <TimerInterface 
+        sessionLength={sessionLength} 
+        breakLength={breakLength} 
+        clickActions={[onBreakLengthDecrementClick, onBreakLengthIncrementClick, onSessionDecrementClick, onSessionIncrementClick ]} 
+      />
     </div>
   );
 }
