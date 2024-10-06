@@ -11,13 +11,17 @@ interface BreakClockProps {
 
 const BreakClock: React.FC<BreakClockProps> = ({ breakTime, sessionTime, clickActions: [pauseClick, playClick ], sessionNumber }) => {
   return (
-    <div>
-      <div id="break-length">{breakTime}</div>
-      <div id="session-length">{sessionTime}</div>
+    <div className="flex flex-col gap-5">
+      <div id="clock-face" className="text-4xl bg-white text-slate-950 flex gap-5 flex-col py-9 px-12">
+        <div id="session-length">{sessionTime}</div>
+        <div id="break-length">{breakTime}</div>
+      </div>
       <div id="timer-label">Session</div>
       <div id="session-number">{sessionNumber}</div>
-      <Button id="play" onClick={playClick} text="play" />
-      <Button id="pause" onClick={pauseClick} text="pause" />
+      <div>
+        <Button id="play" onClick={playClick} text="Play" />
+        <Button id="pause" onClick={pauseClick} text="Pause" />
+      </div>
     </div>
   );
 };

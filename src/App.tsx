@@ -86,7 +86,7 @@ const App = () => {
 
 
   return (
-    <div className="App">
+    <div className="App flex justify-center items-center bg-slate-900 text-white h-screen flex-col text-lg">
       <BreakClock 
         sessionTime={formatTime(sessionTime)} 
         breakTime={formatTime(breakTime)} 
