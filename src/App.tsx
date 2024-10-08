@@ -1,7 +1,6 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useState, useRef} from 'react';
 import BreakClock from './components/BreakClock';
 import TimerInterface from './components/TimerInterface';
-import Button from './Utilities/Button';
 import './App.css';
 
 const App = () => {
@@ -9,10 +8,11 @@ const App = () => {
   const [breakLength, setBreakLength] = useState(5);
   const [sessionLength, setSessionLength] = useState(25);
   const [sessionTime, setSessionTime] = useState(sessionLength * 60); // in seconds
-  const [breakTime, setBreakTime] = useState(breakLength * 60); // in seconds
   const [sessionNumber, setSessionNumber] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [sessionMessage, setSessionMessage] = useState('Session');
+  const audioRef = useRef<HTMLAudioElement>(null);
+  
 
   const onSessionIncrementClick = () => {
     if(sessionLength < 60) {
@@ -31,27 +31,22 @@ const App = () => {
   const onBreakLengthIncrementClick = () => {
     if (breakLength < 60) {
       setBreakLength(breakLength + 1);
-      setBreakTime((breakLength + 1) * 60);
     }
   };
 
   const onBreakLengthDecrementClick = () => {
     if (breakLength > 1) {
       setBreakLength(breakLength - 1);
-      setBreakTime((breakLength - 1) * 60);
     }
   };
 
   
   const playClick = () => {
     if(!isPlaying && sessionLength > 0) {
-      setSessionMessage('Work time');
       setIsPlaying(true);
     }
     if(isPlaying && sessionLength > 0){
-      setSessionMessage('On Pause');
       setIsPlaying(false);
-
     }
   }
 
@@ -61,9 +56,12 @@ const App = () => {
     setSessionLength(25);
     setBreakLength(5);
     setSessionTime(25 * 60);
-    setBreakTime(5 * 60);
     setSessionNumber(0);
-    setSessionMessage('Work time');
+    setSessionMessage('Session');
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+    }
   }
 
   useEffect(() => {
@@ -71,19 +69,25 @@ const App = () => {
     if (isPlaying) {
       timer = setInterval(() => {
         const sessionTimeLeft = document.getElementById('time-left').innerHTML;
-        const breakTimeLeft = document.getElementById('break-left').innerHTML;
-        if ( !sessionTimeLeft.includes('00:00') ) {
+        if ( !sessionTimeLeft.includes('00:00') && sessionMessage === 'Session') {
           setSessionTime(prev => prev - 1);
-        } else if ( !breakTimeLeft.includes('00:00') ) {
+        } else if ( sessionTimeLeft.includes('00:00') && sessionMessage === 'Session') {
+          if (audioRef.current) {
+            audioRef.current.play();
+          }
           setSessionMessage('Break time');
-          setBreakTime(prev => prev - 1);
+          setSessionTime(breakLength * 60);
+        } else if ( !sessionTimeLeft.includes('00:00') && sessionMessage === 'Break time') {
+          setSessionTime(prev => prev - 1);
         } else {
+          if (audioRef.current) {
+            audioRef.current.play();
+          }
           setSessionNumber(prev => prev + 1);
           setIsPlaying(false);
+          setSessionMessage('Session');
           setSessionTime(sessionLength * 60);
-          setBreakTime(breakLength * 60);
           setIsPlaying(true);
-          setSessionMessage('Work time');
         }
       }, 1000); // Update every second
     }
@@ -103,7 +107,6 @@ const App = () => {
     <div className="App flex justify-center items-center bg-slate-900 text-white h-screen flex-col text-lg">
       <BreakClock 
         sessionTime={formatTime(sessionTime)} 
-        breakTime={formatTime(breakTime)} 
         sessionNumber={sessionNumber} 
         clickActions={[playClick, resetClick ]}
         sessionMessage={sessionMessage}
@@ -113,6 +116,7 @@ const App = () => {
         breakLength={breakLength} 
         clickActions={[onBreakLengthDecrementClick, onBreakLengthIncrementClick, onSessionDecrementClick, onSessionIncrementClick ]} 
       />
+      <audio id="beep" src="https://raw.githubusercontent.com/freeCodeCamp/cdn/master/build/testable-projects-fcc/audio/BeepSound.wav" />
     </div>
   );
 }
