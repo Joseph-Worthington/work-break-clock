@@ -51,14 +51,14 @@ const App = () => {
   }
 
   const resetClick = () => {
-    console.log('reset');
     setIsPlaying(false);
     setSessionLength(25);
     setBreakLength(5);
     setSessionTime(25 * 60);
     setSessionNumber(0);
     setSessionMessage('Session');
-    if (audioRef.current) {
+
+    if(audioRef.current) {
       audioRef.current.pause();
       audioRef.current.currentTime = 0;
     }
@@ -68,27 +68,22 @@ const App = () => {
     let timer: NodeJS.Timeout;
     if (isPlaying) {
       timer = setInterval(() => {
-        const sessionTimeLeft = document.getElementById('time-left').innerHTML;
-        if ( !sessionTimeLeft.includes('00:00') && sessionMessage === 'Session') {
-          setSessionTime(prev => prev - 1);
-        } else if ( sessionTimeLeft.includes('00:00') && sessionMessage === 'Session') {
-          if (audioRef.current) {
-            audioRef.current.play();
+        setSessionTime(prev => {
+          if (prev > 0) {
+            return prev - 1;
+          } else {
+            if (sessionMessage === 'Session') {
+              audioRef.current?.play();
+              setSessionMessage('Break time');
+              return breakLength * 60;
+            } else {
+              audioRef.current?.play();
+              setSessionMessage('Session');
+              setSessionNumber(prev => prev + 1);
+              return sessionLength * 60;
+            }
           }
-          setSessionMessage('Break time');
-          setSessionTime(breakLength * 60);
-        } else if ( !sessionTimeLeft.includes('00:00') && sessionMessage === 'Break time') {
-          setSessionTime(prev => prev - 1);
-        } else {
-          if (audioRef.current) {
-            audioRef.current.play();
-          }
-          setSessionNumber(prev => prev + 1);
-          setIsPlaying(false);
-          setSessionMessage('Session');
-          setSessionTime(sessionLength * 60);
-          setIsPlaying(true);
-        }
+        });
       }, 1000); // Update every second
     }
 
@@ -116,7 +111,7 @@ const App = () => {
         breakLength={breakLength} 
         clickActions={[onBreakLengthDecrementClick, onBreakLengthIncrementClick, onSessionDecrementClick, onSessionIncrementClick ]} 
       />
-      <audio id="beep" src="https://raw.githubusercontent.com/freeCodeCamp/cdn/master/build/testable-projects-fcc/audio/BeepSound.wav" />
+      <audio id="beep" src="https://raw.githubusercontent.com/freeCodeCamp/cdn/master/build/testable-projects-fcc/audio/BeepSound.wav" ref={audioRef}></audio>
     </div>
   );
 }
