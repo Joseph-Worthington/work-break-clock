@@ -1,0 +1,13 @@
+{
+  "files": {
+    "main.css": "/work-break-clock/static/css/main.3d8b77bc.css",
+    "main.js": "/work-break-clock/static/js/main.4e97bcae.js",
+    "index.html": "/work-break-clock/index.html",
+    "main.3d8b77bc.css.map": "/work-break-clock/static/css/main.3d8b77bc.css.map",
+    "main.4e97bcae.js.map": "/work-break-clock/static/js/main.4e97bcae.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.3d8b77bc.css",
+    "static/js/main.4e97bcae.js"
+  ]
+}
