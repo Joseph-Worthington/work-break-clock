@@ -88,7 +88,7 @@ const App = () => {
     }
 
     return () => clearInterval(timer); // Cleanup on unmount or when dependencies change
-  }, [isPlaying, sessionLength, breakLength, sessionNumber]);
+  }, [isPlaying, sessionLength, breakLength, sessionNumber, sessionMessage]);
 
   const formatTime = (timeInSeconds: number) => {
     const minutes = Math.floor(timeInSeconds / 60);
